@@ -9,6 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.webmanifest">
   <title>Календар Резервации</title>
+  <!-- version: oblak-mini-v6 -->
   <style>
     :root{
       --bg:#f8fafc; --text:#0f172a; --muted:#64748b; --line:#dbe4f0;
@@ -48,24 +49,21 @@
     .panel{background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 8px 20px rgba(15,23,42,.05); padding:10px; margin-bottom:10px}
     .hidden{display:none!important}
     .cloud-mini{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:8px;
-      background:#ecfdf5;
-      border:1px solid #bbf7d0;
-      color:#166534;
-      border-radius:16px;
-      padding:8px 10px;
-      margin-bottom:10px;
-      font-size:13px;
-      font-weight:900;
+      display:none;
     }
-    .cloud-mini button{
-      min-height:32px;
-      border-radius:11px;
+    .cloud-top-bar{
+      display:flex;
+      justify-content:flex-end;
+      margin-bottom:8px;
+    }
+    .cloud-top-bar button{
+      min-height:34px;
+      border-radius:12px;
       font-size:12px;
       padding:0 10px;
+      background:#ecfdf5;
+      color:#166534;
+      border:1px solid #bbf7d0;
     }
     .panel-title{font-size:15px; font-weight:1000; margin-bottom:8px}
     .small{font-size:12px; color:var(--muted); font-weight:750; line-height:1.35}
@@ -173,18 +171,18 @@
   </header>
 
   <main>
-    <div id="cloudMini" class="cloud-mini hidden">
-      <span>✓ Облачната база е свързана</span>
-      <button class="light" onclick="showCloudPanel()">Настройки</button>
+    <div id="cloudMini" class="cloud-top-bar hidden">
+      <button onclick="showCloudPanel()">⚙︎ Облак</button>
     </div>
 
     <section id="cloudPanel" class="panel">
       <div class="panel-title">Облачна база</div>
-      <div class="small">Постави линка от Google Apps Script. Така резервациите ще се виждат на всички устройства.</div>
+      <div class="small">Тук се настройва онлайн записването. След запазване тази секция се скрива.</div>
       <div style="display:grid;gap:7px;margin-top:8px">
         <input id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
         <button class="primary" onclick="saveApiUrl()">Запази връзката</button>
         <button class="light" onclick="changeApiUrl()">Смени връзката</button>
+        <button class="light" onclick="updateApiPanel()">Скрий настройките</button>
       </div>
       <div id="syncStatus" class="status wait">Не е свързано.</div>
     </section>
@@ -252,20 +250,21 @@ function updateApiPanel(){
   const url=apiUrl();
   const cloudPanel=document.getElementById("cloudPanel");
   const cloudMini=document.getElementById("cloudMini");
-  document.getElementById("apiUrlInput").value=url;
+  const input=document.getElementById("apiUrlInput");
+  if(input) input.value=url;
 
   if(url){
-    cloudPanel.classList.add("hidden");
+    cloudPanel.style.display = "none";
     cloudMini.classList.remove("hidden");
     setStatus("Свързано. Данните се пазят онлайн.", "ok");
   } else {
-    cloudPanel.classList.remove("hidden");
+    cloudPanel.style.display = "block";
     cloudMini.classList.add("hidden");
     setStatus("Не е свързано. Първо постави линк към Google Apps Script.", "bad");
   }
 }
 function showCloudPanel(){
-  document.getElementById("cloudPanel").classList.remove("hidden");
+  document.getElementById("cloudPanel").style.display = "block";
   document.getElementById("cloudMini").classList.add("hidden");
 }
 
@@ -290,6 +289,7 @@ async function saveApiUrl(){
   localStorage.setItem(API_URL_KEY, url);
   updateApiPanel();
   await loadFromCloud();
+  updateApiPanel();
 }
 function changeApiUrl(){
   localStorage.removeItem(API_URL_KEY);
