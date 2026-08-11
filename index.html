@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="manifest" href="manifest.webmanifest">
   <title>Календар Резервации</title>
-  <!-- version: oblak-mini-v6 -->
+  <!-- version: embedded-cloud-link-v7 -->
   <style>
     :root{
       --bg:#f8fafc; --text:#0f172a; --muted:#64748b; --line:#dbe4f0;
@@ -171,20 +171,10 @@
   </header>
 
   <main>
-    <div id="cloudMini" class="cloud-top-bar hidden">
-      <button onclick="showCloudPanel()">⚙︎ Облак</button>
-    </div>
-
-    <section id="cloudPanel" class="panel">
-      <div class="panel-title">Облачна база</div>
-      <div class="small">Тук се настройва онлайн записването. След запазване тази секция се скрива.</div>
-      <div style="display:grid;gap:7px;margin-top:8px">
-        <input id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
-        <button class="primary" onclick="saveApiUrl()">Запази връзката</button>
-        <button class="light" onclick="changeApiUrl()">Смени връзката</button>
-        <button class="light" onclick="updateApiPanel()">Скрий настройките</button>
-      </div>
-      <div id="syncStatus" class="status wait">Не е свързано.</div>
+    <div id="cloudMini" class="cloud-top-bar hidden" style="display:none"></div>
+    <section id="cloudPanel" class="panel hidden" style="display:none">
+      <input id="apiUrlInput" type="hidden">
+      <div id="syncStatus" class="status wait">Свързано.</div>
     </section>
 
     <section class="panel">
@@ -228,6 +218,7 @@
 <script>
 const APP_PASSWORD = "VikP123";
 const API_PASSWORD = "VikP123";
+const EMBEDDED_API_URL = "https://script.google.com/macros/s/AKfycbyLrwNgvjr0TrxLMtRkD9Qx-ahL-WKR3_FBsMkyEGglvb2ekbh48m5nHbA2WckMATmh/exec";
 const ROOMS = ["101","102","201","202","203","204"];
 const MONTHS = ["Януари","Февруари","Март","Април","Май","Юни","Юли","Август","Септември","Октомври","Ноември","Декември"];
 const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
@@ -240,32 +231,23 @@ let checkStart = "";
 let checkEnd = "";
 let reservations = JSON.parse(localStorage.getItem(CACHE_KEY) || "[]");
 
-function apiUrl(){ return localStorage.getItem(API_URL_KEY) || ""; }
+function apiUrl(){ return EMBEDDED_API_URL || localStorage.getItem(API_URL_KEY) || ""; }
 function setStatus(text, type="wait"){
   const el=document.getElementById("syncStatus");
   el.className = "status " + type;
   el.textContent = text;
 }
 function updateApiPanel(){
-  const url=apiUrl();
   const cloudPanel=document.getElementById("cloudPanel");
   const cloudMini=document.getElementById("cloudMini");
   const input=document.getElementById("apiUrlInput");
-  if(input) input.value=url;
-
-  if(url){
-    cloudPanel.style.display = "none";
-    cloudMini.classList.remove("hidden");
-    setStatus("Свързано. Данните се пазят онлайн.", "ok");
-  } else {
-    cloudPanel.style.display = "block";
-    cloudMini.classList.add("hidden");
-    setStatus("Не е свързано. Първо постави линк към Google Apps Script.", "bad");
-  }
+  if(input) input.value=apiUrl();
+  if(cloudPanel) cloudPanel.style.display = "none";
+  if(cloudMini) cloudMini.style.display = "none";
+  setStatus("Свързано. Данните се пазят онлайн.", "ok");
 }
 function showCloudPanel(){
-  document.getElementById("cloudPanel").style.display = "block";
-  document.getElementById("cloudMini").classList.add("hidden");
+  updateApiPanel();
 }
 
 async function api(action, payload={}){
@@ -281,20 +263,11 @@ async function api(action, payload={}){
   return data;
 }
 async function saveApiUrl(){
-  const url=document.getElementById("apiUrlInput").value.trim();
-  if(!url || !url.includes("script.google.com")){
-    alert("Постави правилния линк от Google Apps Script, който завършва на /exec.");
-    return;
-  }
-  localStorage.setItem(API_URL_KEY, url);
   updateApiPanel();
   await loadFromCloud();
-  updateApiPanel();
 }
 function changeApiUrl(){
-  localStorage.removeItem(API_URL_KEY);
   updateApiPanel();
-  document.getElementById("apiUrlInput").focus();
 }
 async function loadFromCloud(){
   if(!apiUrl()){ renderAll(); checkAvailability(); return; }
