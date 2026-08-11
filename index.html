@@ -91,6 +91,41 @@
     .unlock{width:100%; margin-top:12px; background:#0f172a; color:#fff}
     .error{display:none; margin-top:10px; color:#991b1b; font-size:14px; font-weight:900}
     @media(max-width:340px){.rooms{grid-template-columns:1fr}.double,.check-grid{grid-template-columns:1fr}}
+
+    .date-pick-box{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+    .pick-btn{
+      min-height:46px;
+      text-align:left;
+      padding:0 10px;
+      font-size:13px;
+      line-height:1.15;
+    }
+    .pick-btn span{
+      display:block;
+      font-size:14px;
+      color:#0f172a;
+      margin-top:2px;
+    }
+    .pick-btn.active{
+      background:#dbeafe;
+      border-color:#60a5fa;
+      color:#1e3a8a;
+    }
+    .pick-hint{
+      margin-top:7px;
+      font-size:12px;
+      font-weight:800;
+      color:#64748b;
+      line-height:1.3;
+    }
+    .day.range-start,.day.range-end{
+      box-shadow:0 0 0 2px #1e3a8a inset;
+    }
+
   </style>
 </head>
 <body>
@@ -130,16 +165,11 @@
 
     <section class="panel">
       <div class="panel-title">Проверка за свободна стая</div>
-      <div class="check-grid">
-        <div class="field">
-          <label for="checkIn">От дата</label>
-          <input id="checkIn" type="date" onchange="checkAvailability()">
-        </div>
-        <div class="field">
-          <label for="checkOut">До дата</label>
-          <input id="checkOut" type="date" onchange="checkAvailability()">
-        </div>
+      <div class="date-pick-box">
+        <button id="pickStartBtn" class="light pick-btn" onclick="setPickMode('start')">От: <span id="checkInText"></span></button>
+        <button id="pickEndBtn" class="light pick-btn" onclick="setPickMode('end')">До: <span id="checkOutText"></span></button>
       </div>
+      <div id="pickHint" class="pick-hint">Натисни „От“ или „До“, после избери ден от календара.</div>
       <button class="primary" style="width:100%;margin-top:8px" onclick="checkAvailability()">Провери</button>
       <div id="checkResult" class="check-result"></div>
     </section>
@@ -181,6 +211,9 @@ const API_URL_KEY = "calendar_google_script_api_url_v1";
 const CACHE_KEY = "reservations_cloud_cache_v1";
 let current = new Date();
 let selected = null;
+let pickMode = null;
+let checkStart = "";
+let checkEnd = "";
 let reservations = JSON.parse(localStorage.getItem(CACHE_KEY) || "[]");
 
 function apiUrl(){ return localStorage.getItem(API_URL_KEY) || ""; }
@@ -283,6 +316,55 @@ function escapeHtml(str){return String(str ?? "").replace(/[&<>"']/g, s => ({'&'
 function fmt(k){const d=dateFromKey(k); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`}
 function nightsBetween(startKey,endKey){return Math.round((dateFromKey(endKey)-dateFromKey(startKey))/(1000*60*60*24))}
 
+function shortFmt(k){
+  if(!k) return "избери";
+  const d=dateFromKey(k);
+  return `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+}
+function updateCheckTexts(){
+  document.getElementById("checkInText").textContent = shortFmt(checkStart);
+  document.getElementById("checkOutText").textContent = shortFmt(checkEnd);
+  document.getElementById("pickStartBtn").classList.toggle("active", pickMode === "start");
+  document.getElementById("pickEndBtn").classList.toggle("active", pickMode === "end");
+  const hint = document.getElementById("pickHint");
+  if(pickMode === "start") hint.textContent = "Сега избери начална дата от календара.";
+  else if(pickMode === "end") hint.textContent = "Сега избери крайна дата от календара.";
+  else hint.textContent = "Натисни „От“ или „До“, после избери ден от календара.";
+}
+function setPickMode(mode){
+  pickMode = mode;
+  updateCheckTexts();
+}
+function chooseDateForCheck(dateKey){
+  if(!pickMode) return false;
+
+  if(pickMode === "start"){
+    checkStart = dateKey;
+    if(!checkEnd || dateFromKey(checkEnd) <= dateFromKey(checkStart)){
+      const next = dateFromKey(checkStart);
+      next.setDate(next.getDate()+1);
+      checkEnd = keyFromDate(next);
+    }
+    pickMode = "end";
+  } else {
+    checkEnd = dateKey;
+    if(checkStart && dateFromKey(checkEnd) <= dateFromKey(checkStart)){
+      alert("„До“ трябва да е след „От“.");
+      return true;
+    }
+    pickMode = null;
+  }
+
+  updateCheckTexts();
+  renderAll();
+  checkAvailability();
+  return true;
+}
+function isRangeMark(dayKey){
+  return dayKey === checkStart || dayKey === checkEnd;
+}
+
+
 function setupControls(){
   const month=document.getElementById("month"), year=document.getElementById("year");
   month.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
@@ -290,8 +372,9 @@ function setupControls(){
   year.innerHTML=[cy-1,cy,cy+1,cy+2,cy+3].map(y=>`<option value="${y}">${y}</option>`).join("");
   month.value=current.getMonth(); year.value=current.getFullYear();
   const today=new Date(), tomorrow=new Date(today); tomorrow.setDate(today.getDate()+1);
-  document.getElementById("checkIn").value = keyFromDate(today);
-  document.getElementById("checkOut").value = keyFromDate(tomorrow);
+  checkStart = keyFromDate(today);
+  checkEnd = keyFromDate(tomorrow);
+  updateCheckTexts();
 }
 function getYM(){return [Number(document.getElementById("year").value),Number(document.getElementById("month").value)]}
 function moveMonth(delta){
@@ -310,7 +393,7 @@ function buildRoomCalendar(room,y,m){
   for(let i=0;i<blanks;i++) html+=`<div class="day empty"></div>`;
   for(let d=1; d<=total; d++){
     const dk=key(y,m,d), res=findReservation(room,dk), isToday=today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
-    html += `<button class="day ${res?'busy':'free'} ${isToday?'today':''}" onclick="openCell('${room}',${d})">${d}</button>`;
+    html += `<button class="day ${res?'busy':'free'} ${isToday?'today':''} ${isRangeMark(dk)?'range-start':''}" onclick="openCell('${room}',${d})">${d}</button>`;
   }
   const tail=(7-((blanks+total)%7))%7;
   for(let i=0;i<tail;i++) html+=`<div class="day empty"></div>`;
@@ -321,15 +404,17 @@ function renderAll(){
   document.getElementById("rooms").innerHTML=ROOMS.map(room=>buildRoomCalendar(room,y,m)).join("");
 }
 function checkAvailability(){
-  const start=document.getElementById("checkIn").value, end=document.getElementById("checkOut").value, result=document.getElementById("checkResult");
+  const start=checkStart, end=checkEnd, result=document.getElementById("checkResult");
   if(!start || !end){ result.innerHTML=`<span style="color:#991b1b">Избери начална и крайна дата.</span>`; return; }
   if(dateFromKey(end)<=dateFromKey(start)){ result.innerHTML=`<span style="color:#991b1b">„До дата“ трябва да е след „От дата“.</span>`; return; }
   const free=ROOMS.filter(room=>roomIsFree(room,start,end)), busy=ROOMS.filter(room=>!roomIsFree(room,start,end)), nights=nightsBetween(start,end);
   result.innerHTML=`<div>Период: <b>${fmt(start)} → ${fmt(end)}</b> · ${nights} нощувки</div><div class="room-badges">${free.length?free.map(r=>`<span class="badge free">Свободна ${r}</span>`).join(""):`<span class="badge busy">Няма свободна стая</span>`}</div>${busy.length?`<div class="room-badges">${busy.map(r=>`<span class="badge busy">Заета ${r}</span>`).join("")}</div>`:""}`;
 }
 function openCell(room,day){
+  const [y,m]=getYM(), dk=key(y,m,day);
+  if(chooseDateForCheck(dk)) return;
   selected={room,day};
-  const [y,m]=getYM(), dk=key(y,m,day), date=new Date(y,m,day), res=findReservation(room,dk);
+  const date=new Date(y,m,day), res=findReservation(room,dk);
   document.getElementById("dlgTitle").textContent=`Стая ${room}`;
   document.getElementById("dlgSub").textContent=`${day} ${MONTHS[m]} ${y} · ${WEEKDAYS[mondayIndex(date.getDay())]}`;
   document.getElementById("guest").value=""; document.getElementById("phone").value=""; document.getElementById("city").value="";
