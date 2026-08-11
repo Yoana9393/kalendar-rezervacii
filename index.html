@@ -10,34 +10,397 @@
   <link rel="manifest" href="manifest.webmanifest">
   <title>Календар Резервации</title>
   <style>
-    :root{--bg:#f8fafc;--text:#0f172a;--muted:#64748b;--line:#dbe4f0;--dark:#0f172a;--free:#dcfce7;--free-border:#86efac;--free-text:#166534;--busy:#fee2e2;--busy-border:#fca5a5;--busy-text:#991b1b;--empty:#f1f5f9;--card:#fff}
-    *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#f8fafc 38%,#eef2f7 100%);color:var(--text)}
-    .app{max-width:440px;min-height:100vh;margin:0 auto;background:var(--bg);padding-bottom:22px;box-shadow:0 0 40px rgba(15,23,42,.12)}
-    header{position:sticky;top:0;z-index:10;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:17px 10px 12px;border-bottom-left-radius:22px;border-bottom-right-radius:22px;box-shadow:0 10px 24px rgba(15,23,42,.2)}
-    h1{margin:0;font-size:18px;text-align:center;letter-spacing:.04em;font-weight:1000;text-transform:uppercase}.controls{display:grid;grid-template-columns:42px 1fr 1fr 42px;gap:6px;margin-top:12px}
-    button,input,select{font:inherit}button{border:0;min-height:42px;border-radius:14px;padding:0 12px;font-weight:900;cursor:pointer}.navbtn,.lock-btn{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25)}.lock-btn{width:100%;min-height:38px;margin-top:9px;font-size:14px}.primary{background:var(--dark);color:#fff}.light{background:#fff;color:var(--text);border:1px solid var(--line)}.danger{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;min-height:38px}
-    select,input{width:100%;min-height:42px;border-radius:14px;border:1px solid #cbd5e1;background:#fff;padding:0 10px;font-size:15px;font-weight:750;color:var(--text);box-shadow:0 3px 10px rgba(15,23,42,.05)}
-    main{padding:10px 8px}.panel{background:#fff;border:1px solid var(--line);border-radius:18px;box-shadow:0 8px 20px rgba(15,23,42,.05);padding:10px;margin-bottom:10px}.panel-title{font-size:15px;font-weight:1000;margin-bottom:8px}.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field label{display:block;font-size:12px;color:#334155;font-weight:900;margin-bottom:4px}.check-result{margin-top:8px;font-size:13px;font-weight:800;line-height:1.35}.room-badges{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.badge{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:1000;border:1px solid transparent}.badge.free{background:var(--free);color:var(--free-text);border-color:var(--free-border)}.badge.busy{background:var(--busy);color:var(--busy-text);border-color:var(--busy-border)}
-    .rooms{display:grid;grid-template-columns:1fr 1fr;gap:8px}.room-card{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:0 8px 20px rgba(15,23,42,.05)}.room-head{padding:9px 8px 7px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#f8fafc);text-align:center}.room-title{font-size:17px;font-weight:1000;letter-spacing:-.02em}.room-meta{display:flex;justify-content:center;gap:5px;flex-wrap:wrap;margin-top:5px}.pill{min-height:20px;padding:0 7px;display:inline-flex;align-items:center;border-radius:999px;font-size:10px;font-weight:1000;border:1px solid transparent}.pill.free{background:var(--free);color:var(--free-text);border-color:var(--free-border)}.pill.busy{background:var(--busy);color:var(--busy-text);border-color:var(--busy-border)}
-    .mini-calendar{padding:7px}.weekdays,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}.weekdays{margin-bottom:4px}.weekday{text-align:center;font-size:9px;color:var(--muted);font-weight:1000;padding:2px 0}.day{min-height:29px;border-radius:9px;border:1px solid transparent;display:flex;align-items:center;justify-content:center;padding:1px;font-size:11px;font-weight:1000}.day.empty{background:var(--empty);border-color:#edf2f7;color:#cbd5e1}.day.free{background:var(--free);border-color:var(--free-border);color:var(--free-text)}.day.busy{background:var(--busy);border-color:var(--busy-border);color:var(--busy-text)}.day.today{box-shadow:0 0 0 2px var(--dark) inset}
-    dialog{width:min(440px,94vw);border:0;border-radius:24px;padding:0;box-shadow:0 24px 60px rgba(0,0,0,.28)}dialog::backdrop{background:rgba(15,23,42,.45)}.modal{padding:16px}.modal h2{margin:0 0 8px;font-size:20px;letter-spacing:-.03em}.modal-sub{color:var(--muted);font-size:13px;font-weight:800;margin-bottom:10px}.stack{display:grid;gap:10px}.double{display:grid;grid-template-columns:1fr 1fr;gap:8px}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.info-box{border-radius:16px;padding:12px;margin-bottom:10px;border:1px solid var(--line);background:#f8fafc}.info-box.free{background:#f0fdf4;border-color:#bbf7d0;color:#166534}.info-box.busy{background:#fef2f2;border-color:#fecaca;color:#991b1b}.guest{font-size:17px;font-weight:1000;margin-bottom:3px}.meta{font-size:13px;color:var(--muted);font-weight:750;margin-top:4px}
-    .lock-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#0f172a,#1e3a8a)}.lock-card{width:min(360px,100%);border-radius:26px;background:#fff;padding:22px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.35)}.lock-card h2{margin:0;color:#0f172a;font-size:23px;letter-spacing:-.03em}.lock-card p{margin:8px 0 16px;color:#64748b;font-size:14px;font-weight:750}.lock-card input{text-align:center;font-size:18px;letter-spacing:.08em}.unlock{width:100%;margin-top:12px;background:#0f172a;color:#fff}.error{display:none;margin-top:10px;color:#991b1b;font-size:14px;font-weight:900}
+    :root{
+      --bg:#f8fafc; --text:#0f172a; --muted:#64748b; --line:#dbe4f0;
+      --dark:#0f172a; --free:#dcfce7; --free-border:#86efac; --free-text:#166534;
+      --busy:#fee2e2; --busy-border:#fca5a5; --busy-text:#991b1b; --empty:#f1f5f9;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background:linear-gradient(180deg,#dbeafe 0%,#f8fafc 38%,#eef2f7 100%);
+      color:var(--text);
+    }
+    .app{
+      max-width:440px; min-height:100vh; margin:0 auto; background:var(--bg);
+      padding-bottom:22px; box-shadow:0 0 40px rgba(15,23,42,.12);
+    }
+    header{
+      position:sticky; top:0; z-index:10; background:linear-gradient(135deg,#0f172a,#1e3a8a);
+      color:#fff; padding:17px 10px 12px; border-bottom-left-radius:22px;
+      border-bottom-right-radius:22px; box-shadow:0 10px 24px rgba(15,23,42,.2);
+    }
+    h1{margin:0; font-size:18px; text-align:center; letter-spacing:.04em; font-weight:1000; text-transform:uppercase}
+    .controls{display:grid; grid-template-columns:42px 1fr 1fr 42px; gap:6px; margin-top:12px}
+    button,input,select{font:inherit}
+    button{border:0; min-height:42px; border-radius:14px; padding:0 12px; font-weight:900; cursor:pointer}
+    .navbtn,.lock-btn{background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.25)}
+    .lock-btn{width:100%; min-height:38px; margin-top:9px; font-size:14px}
+    .primary{background:var(--dark); color:#fff}
+    .light{background:#fff; color:var(--text); border:1px solid var(--line)}
+    .danger{background:#fee2e2; color:#991b1b; border:1px solid #fecaca; min-height:38px}
+    select,input{
+      width:100%; min-height:42px; border-radius:14px; border:1px solid #cbd5e1; background:#fff;
+      padding:0 10px; font-size:15px; font-weight:750; color:var(--text); box-shadow:0 3px 10px rgba(15,23,42,.05);
+    }
+    main{padding:10px 8px}
+    .panel{background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 8px 20px rgba(15,23,42,.05); padding:10px; margin-bottom:10px}
+    .panel-title{font-size:15px; font-weight:1000; margin-bottom:8px}
+    .small{font-size:12px; color:var(--muted); font-weight:750; line-height:1.35}
+    .status{font-size:13px; font-weight:900; margin-top:7px}
+    .status.ok{color:#166534}.status.bad{color:#991b1b}.status.wait{color:#1e3a8a}
+    .check-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .date-selects{display:grid; grid-template-columns:.7fr 1.35fr 1fr; gap:5px}
+    .date-selects select{min-height:40px; font-size:13px; padding:0 6px}
+    .field label{display:block; font-size:12px; color:#334155; font-weight:900; margin-bottom:4px}
+    .check-result{margin-top:8px; font-size:13px; font-weight:800; line-height:1.35}
+    .room-badges{display:flex; flex-wrap:wrap; gap:6px; margin-top:7px}
+    .badge,.pill{display:inline-flex; align-items:center; border-radius:999px; font-weight:1000; border:1px solid transparent}
+    .badge{min-height:26px; padding:0 9px; font-size:12px}
+    .pill{min-height:20px; padding:0 7px; font-size:10px}
+    .free{background:var(--free); color:var(--free-text); border-color:var(--free-border)}
+    .busy{background:var(--busy); color:var(--busy-text); border-color:var(--busy-border)}
+    .rooms{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .room-card{background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 8px 20px rgba(15,23,42,.05)}
+    .room-head{padding:9px 8px 7px; border-bottom:1px solid var(--line); background:linear-gradient(180deg,#fff,#f8fafc); text-align:center}
+    .room-title{font-size:17px; font-weight:1000; letter-spacing:-.02em}
+    .room-meta{display:flex; justify-content:center; gap:5px; flex-wrap:wrap; margin-top:5px}
+    .mini-calendar{padding:7px}
+    .weekdays,.days{display:grid; grid-template-columns:repeat(7,1fr); gap:3px}
+    .weekdays{margin-bottom:4px}
+    .weekday{text-align:center; font-size:9px; color:var(--muted); font-weight:1000; padding:2px 0}
+    .day{min-height:29px; border-radius:9px; border:1px solid transparent; display:flex; align-items:center; justify-content:center; padding:1px; font-size:11px; font-weight:1000}
+    .day.empty{background:var(--empty); border-color:#edf2f7; color:#cbd5e1}
+    .day.today{box-shadow:0 0 0 2px var(--dark) inset}
+    dialog{width:min(440px,94vw); border:0; border-radius:24px; padding:0; box-shadow:0 24px 60px rgba(0,0,0,.28)}
+    dialog::backdrop{background:rgba(15,23,42,.45)}
+    .modal{padding:16px}
+    .modal h2{margin:0 0 8px; font-size:20px; letter-spacing:-.03em}
+    .modal-sub{color:var(--muted); font-size:13px; font-weight:800; margin-bottom:10px}
+    .stack{display:grid; gap:10px}
+    .double{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .actions{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px}
+    .info-box{border-radius:16px; padding:12px; margin-bottom:10px; border:1px solid var(--line); background:#f8fafc}
+    .info-box.busy{background:#fef2f2; border-color:#fecaca; color:#991b1b}
+    .guest{font-size:17px; font-weight:1000; margin-bottom:3px}
+    .meta{font-size:13px; color:var(--muted); font-weight:750; margin-top:4px}
+    .lock-screen{position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center; padding:20px; background:linear-gradient(135deg,#0f172a,#1e3a8a)}
+    .lock-card{width:min(360px,100%); border-radius:26px; background:#fff; padding:22px; text-align:center; box-shadow:0 24px 70px rgba(0,0,0,.35)}
+    .lock-card h2{margin:0; color:#0f172a; font-size:23px; letter-spacing:-.03em}
+    .lock-card p{margin:8px 0 16px; color:#64748b; font-size:14px; font-weight:750}
+    .lock-card input{text-align:center; font-size:18px; letter-spacing:.08em}
+    .unlock{width:100%; margin-top:12px; background:#0f172a; color:#fff}
+    .error{display:none; margin-top:10px; color:#991b1b; font-size:14px; font-weight:900}
     @media(max-width:340px){.rooms{grid-template-columns:1fr}.double,.check-grid{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
-<div id="lockScreen" class="lock-screen"><div class="lock-card"><h2>КАЛЕНДАР РЕЗЕРВАЦИИ</h2><p>Въведи парола.</p><input id="passwordInput" type="password" autocomplete="current-password"><button class="unlock" onclick="unlockApp()">Отключи</button><div id="lockError" class="error">Грешна парола.</div></div></div>
-<div class="app"><header><h1>КАЛЕНДАР РЕЗЕРВАЦИИ</h1><div class="controls"><button class="navbtn" onclick="moveMonth(-1)">‹</button><select id="month" onchange="renderAll()"></select><select id="year" onchange="renderAll()"></select><button class="navbtn" onclick="moveMonth(1)">›</button></div><button class="lock-btn" onclick="lockApp()">Заключи</button></header><main><section class="panel"><div class="panel-title">Проверка за свободна стая</div><div class="check-grid"><div class="field"><label for="checkIn">От дата</label><input id="checkIn" type="date"></div><div class="field"><label for="checkOut">До дата</label><input id="checkOut" type="date"></div></div><button class="primary" style="width:100%;margin-top:8px" onclick="checkAvailability()">Провери</button><div id="checkResult" class="check-result"></div></section><div id="rooms" class="rooms"></div></main></div>
-<dialog id="dlg"><div class="modal"><h2 id="dlgTitle">Резервация</h2><div id="dlgSub" class="modal-sub"></div><div id="existing"></div><div id="form" class="stack"><div class="field"><label for="guest">Име на гост</label><input id="guest"></div><div class="field"><label for="phone">Телефон</label><input id="phone"></div><div class="double"><div class="field"><label for="guestCount">Брой гости</label><input id="guestCount" type="number" min="1" value="2"></div><div class="field"><label for="nights">Брой нощувки</label><input id="nights" type="number" min="1" value="1"></div></div></div><div class="actions"><button class="light" onclick="closeDlg()">Затвори</button><button id="saveBtn" class="primary" onclick="saveReservation()">Запази</button></div></div></dialog>
+<div id="lockScreen" class="lock-screen">
+  <div class="lock-card">
+    <h2>КАЛЕНДАР РЕЗЕРВАЦИИ</h2>
+    <p>Въведи парола.</p>
+    <input id="passwordInput" type="password" autocomplete="current-password">
+    <button class="unlock" onclick="unlockApp()">Отключи</button>
+    <div id="lockError" class="error">Грешна парола.</div>
+  </div>
+</div>
+
+<div class="app">
+  <header>
+    <h1>КАЛЕНДАР РЕЗЕРВАЦИИ</h1>
+    <div class="controls">
+      <button class="navbtn" onclick="moveMonth(-1)">‹</button>
+      <select id="month" onchange="renderAll()"></select>
+      <select id="year" onchange="renderAll()"></select>
+      <button class="navbtn" onclick="moveMonth(1)">›</button>
+    </div>
+    <button class="lock-btn" onclick="lockApp()">Заключи</button>
+  </header>
+
+  <main>
+    <section id="cloudPanel" class="panel">
+      <div class="panel-title">Облачна база</div>
+      <div class="small">Постави линка от Google Apps Script. Така резервациите ще се виждат на всички устройства.</div>
+      <div style="display:grid;gap:7px;margin-top:8px">
+        <input id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+        <button class="primary" onclick="saveApiUrl()">Запази връзката</button>
+        <button class="light" onclick="changeApiUrl()">Смени връзката</button>
+      </div>
+      <div id="syncStatus" class="status wait">Не е свързано.</div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title">Проверка за свободна стая</div>
+      <div class="check-grid">
+        <div class="field">
+          <label>От дата</label>
+          <div class="date-selects">
+            <select id="checkInDay"></select><select id="checkInMonth"></select><select id="checkInYear"></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>До дата</label>
+          <div class="date-selects">
+            <select id="checkOutDay"></select><select id="checkOutMonth"></select><select id="checkOutYear"></select>
+          </div>
+        </div>
+      </div>
+      <button class="primary" style="width:100%;margin-top:8px" onclick="checkAvailability()">Провери</button>
+      <div id="checkResult" class="check-result"></div>
+    </section>
+
+    <div id="rooms" class="rooms"></div>
+  </main>
+</div>
+
+<dialog id="dlg">
+  <div class="modal">
+    <h2 id="dlgTitle">Резервация</h2>
+    <div id="dlgSub" class="modal-sub"></div>
+    <div id="existing"></div>
+
+    <div id="form" class="stack">
+      <div class="field"><label for="guest">Име на гост</label><input id="guest"></div>
+      <div class="field"><label for="phone">Телефон</label><input id="phone"></div>
+      <div class="field"><label for="city">Град</label><input id="city"></div>
+      <div class="double">
+        <div class="field"><label for="guestCount">Брой гости</label><input id="guestCount" type="number" min="1" value="2"></div>
+        <div class="field"><label for="nights">Брой нощувки</label><input id="nights" type="number" min="1" value="1"></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="light" onclick="closeDlg()">Затвори</button>
+      <button id="saveBtn" class="primary" onclick="saveReservation()">Запази</button>
+    </div>
+  </div>
+</dialog>
+
 <script>
-const APP_PASSWORD="VikP123";const ROOMS=["201","202","101","102","203","204"];const MONTHS=["Януари","Февруари","Март","Април","Май","Юни","Юли","Август","Септември","Октомври","Ноември","Декември"];const WEEKDAYS=["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];let current=new Date(),selected=null,reservations=JSON.parse(localStorage.getItem("reservations_v11_rooms_6")||"[]");
-function checkAuth(){document.getElementById("lockScreen").style.display=localStorage.getItem("calendar_unlocked_v2")==="yes"?"none":"flex"}function unlockApp(){const i=document.getElementById("passwordInput"),e=document.getElementById("lockError");if(i.value===APP_PASSWORD){localStorage.setItem("calendar_unlocked_v2","yes");e.style.display="none";checkAuth()}else{e.style.display="block";i.value="";i.focus()}}function lockApp(){localStorage.removeItem("calendar_unlocked_v2");document.getElementById("passwordInput").value="";checkAuth()}document.addEventListener("DOMContentLoaded",()=>{checkAuth();document.getElementById("passwordInput").addEventListener("keydown",e=>{if(e.key==="Enter")unlockApp()})});
-function saveAll(){localStorage.setItem("reservations_v11_rooms_6",JSON.stringify(reservations))}function pad(n){return String(n).padStart(2,"0")}function key(y,m,d){return`${y}-${pad(m+1)}-${pad(d)}`}function dateFromKey(k){const[y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d)}function keyFromDate(d){return`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}function mondayIndex(jsDay){return(jsDay+6)%7}function inRange(dayKey,start,end){const d=dateFromKey(dayKey),s=dateFromKey(start),e=dateFromKey(end);return d>=s&&d<e}function overlaps(a,b,c,d){return dateFromKey(a)<dateFromKey(d)&&dateFromKey(b)>dateFromKey(c)}function roomIsFree(room,start,end){return !reservations.some(r=>r.room===room&&overlaps(r.start,r.end,start,end))}function findReservation(room,dayKey){return reservations.find(r=>r.room===room&&inRange(dayKey,r.start,r.end))}function escapeHtml(str){return String(str??"").replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]))}function fmt(k){const d=dateFromKey(k);return`${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`}function nightsBetween(s,e){return Math.round((dateFromKey(e)-dateFromKey(s))/(1000*60*60*24))}
-function setupControls(){const m=document.getElementById("month"),y=document.getElementById("year");m.innerHTML=MONTHS.map((x,i)=>`<option value="${i}">${x}</option>`).join("");const cy=new Date().getFullYear();y.innerHTML=[cy-1,cy,cy+1,cy+2,cy+3].map(v=>`<option value="${v}">${v}</option>`).join("");m.value=current.getMonth();y.value=current.getFullYear();const t=new Date(),tm=new Date(t);tm.setDate(t.getDate()+1);document.getElementById("checkIn").value=keyFromDate(t);document.getElementById("checkOut").value=keyFromDate(tm)}function getYM(){return[Number(document.getElementById("year").value),Number(document.getElementById("month").value)]}function moveMonth(delta){const[y,m]=getYM(),d=new Date(y,m+delta,1);document.getElementById("month").value=d.getMonth();document.getElementById("year").value=d.getFullYear();renderAll()}
-function roomStats(room,y,m){const total=daysInMonth(y,m);let busy=0;for(let d=1;d<=total;d++)if(findReservation(room,key(y,m,d)))busy++;return{busy,free:total-busy}}function buildRoomCalendar(room,y,m){const first=new Date(y,m,1),total=daysInMonth(y,m),blanks=mondayIndex(first.getDay()),today=new Date(),stats=roomStats(room,y,m);let html=`<div class="room-card"><div class="room-head"><div class="room-title">🛏️ ${room}</div><div class="room-meta"><span class="pill free">${stats.free}</span><span class="pill busy">${stats.busy}</span></div></div><div class="mini-calendar"><div class="weekdays">${WEEKDAYS.map(d=>`<div class="weekday">${d}</div>`).join("")}</div><div class="days">`;for(let i=0;i<blanks;i++)html+=`<div class="day empty"></div>`;for(let d=1;d<=total;d++){const dk=key(y,m,d),res=findReservation(room,dk),isToday=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;html+=`<button class="day ${res?'busy':'free'} ${isToday?'today':''}" onclick="openCell('${room}',${d})">${d}</button>`}const used=blanks+total,tail=(7-(used%7))%7;for(let i=0;i<tail;i++)html+=`<div class="day empty"></div>`;return html+`</div></div></div>`}function renderAll(){const[y,m]=getYM();document.getElementById("rooms").innerHTML=ROOMS.map(r=>buildRoomCalendar(r,y,m)).join("")}
-function checkAvailability(){const start=document.getElementById("checkIn").value,end=document.getElementById("checkOut").value,result=document.getElementById("checkResult");if(!start||!end){result.innerHTML=`<span style="color:#991b1b">Избери начална и крайна дата.</span>`;return}if(dateFromKey(end)<=dateFromKey(start)){result.innerHTML=`<span style="color:#991b1b">„До дата“ трябва да е след „От дата“.</span>`;return}const free=ROOMS.filter(r=>roomIsFree(r,start,end)),busy=ROOMS.filter(r=>!roomIsFree(r,start,end)),n=nightsBetween(start,end);result.innerHTML=`<div>Период: <b>${fmt(start)} → ${fmt(end)}</b> · ${n} нощувки</div><div class="room-badges">${free.length?free.map(r=>`<span class="badge free">Свободна ${r}</span>`).join(""):`<span class="badge busy">Няма свободна стая</span>`}</div>${busy.length?`<div class="room-badges">${busy.map(r=>`<span class="badge busy">Заета ${r}</span>`).join("")}</div>`:""}`}
-function openCell(room,day){selected={room,day};const[y,m]=getYM(),dk=key(y,m,day),date=new Date(y,m,day),res=findReservation(room,dk);document.getElementById("dlgTitle").textContent=`Стая ${room}`;document.getElementById("dlgSub").textContent=`${day} ${MONTHS[m]} ${y} · ${WEEKDAYS[mondayIndex(date.getDay())]}`;document.getElementById("guest").value="";document.getElementById("phone").value="";document.getElementById("guestCount").value="2";document.getElementById("nights").value="1";if(res){const nights=nightsBetween(res.start,res.end);document.getElementById("existing").innerHTML=`<div class="info-box busy"><div class="guest">Заето: ${escapeHtml(res.guest)}</div><div class="meta">${fmt(res.start)} → ${fmt(res.end)}</div>${res.phone?`<div class="meta">Телефон: ${escapeHtml(res.phone)}</div>`:""}<div class="meta">Брой гости: ${escapeHtml(res.guestCount||"")}</div><div class="meta">Брой нощувки: ${nights}</div><div style="margin-top:10px"><button class="danger" onclick="deleteReservation(${res.id})">Изтрий резервацията</button></div></div>`;document.getElementById("form").style.display="grid";document.getElementById("saveBtn").style.display="none"}else{document.getElementById("existing").innerHTML=`<div class="info-box free">Свободно. Попълни данните и натисни „Запази“.</div>`;document.getElementById("form").style.display="grid";document.getElementById("saveBtn").style.display="block"}document.getElementById("dlg").showModal()}
-function closeDlg(){document.getElementById("dlg").close();selected=null}function saveReservation(){if(!selected)return;const guest=document.getElementById("guest").value.trim();if(!guest){alert("Напиши име на гост.");return}const phone=document.getElementById("phone").value.trim(),guestCount=Math.max(1,Number(document.getElementById("guestCount").value||1)),nights=Math.max(1,Number(document.getElementById("nights").value||1)),[y,m]=getYM(),startDate=new Date(y,m,selected.day),endDate=new Date(startDate);endDate.setDate(startDate.getDate()+nights);const start=keyFromDate(startDate),end=keyFromDate(endDate);if(!roomIsFree(selected.room,start,end)){alert("Има зает ден в този период. Избери друга стая или дата.");return}reservations.push({id:Date.now(),room:selected.room,guest,phone,guestCount,start,end});saveAll();closeDlg();renderAll();checkAvailability()}function deleteReservation(id){if(!confirm("Да изтрия ли резервацията?"))return;reservations=reservations.filter(r=>r.id!==id);saveAll();closeDlg();renderAll();checkAvailability()}if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}setupControls();renderAll();checkAvailability();
+const APP_PASSWORD = "VikP123";
+const API_PASSWORD = "VikP123";
+const ROOMS = ["101","102","201","202","203","204"];
+const MONTHS = ["Януари","Февруари","Март","Април","Май","Юни","Юли","Август","Септември","Октомври","Ноември","Декември"];
+const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Нд"];
+const API_URL_KEY = "calendar_google_script_api_url_v1";
+const CACHE_KEY = "reservations_cloud_cache_v1";
+let current = new Date();
+let selected = null;
+let reservations = JSON.parse(localStorage.getItem(CACHE_KEY) || "[]");
+
+function apiUrl(){ return localStorage.getItem(API_URL_KEY) || ""; }
+function setStatus(text, type="wait"){
+  const el=document.getElementById("syncStatus");
+  el.className = "status " + type;
+  el.textContent = text;
+}
+function updateApiPanel(){
+  const url=apiUrl();
+  document.getElementById("apiUrlInput").value=url;
+  if(url){ setStatus("Свързано. Данните се пазят онлайн.", "ok"); }
+  else { setStatus("Не е свързано. Първо постави линк към Google Apps Script.", "bad"); }
+}
+async function api(action, payload={}){
+  const url=apiUrl();
+  if(!url) throw new Error("Няма линк към облачната база.");
+  const body = new URLSearchParams();
+  body.set("action", action);
+  body.set("password", API_PASSWORD);
+  Object.entries(payload).forEach(([k,v]) => body.set(k, typeof v === "string" ? v : JSON.stringify(v)));
+  const res = await fetch(url, { method:"POST", body });
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || "Грешка в базата.");
+  return data;
+}
+async function saveApiUrl(){
+  const url=document.getElementById("apiUrlInput").value.trim();
+  if(!url || !url.includes("script.google.com")){
+    alert("Постави правилния линк от Google Apps Script, който завършва на /exec.");
+    return;
+  }
+  localStorage.setItem(API_URL_KEY, url);
+  updateApiPanel();
+  await loadFromCloud();
+}
+function changeApiUrl(){
+  localStorage.removeItem(API_URL_KEY);
+  updateApiPanel();
+  document.getElementById("apiUrlInput").focus();
+}
+async function loadFromCloud(){
+  if(!apiUrl()){ renderAll(); checkAvailability(); return; }
+  try{
+    setStatus("Зареждам резервациите от облака...", "wait");
+    const data = await api("list");
+    reservations = data.reservations || [];
+    localStorage.setItem(CACHE_KEY, JSON.stringify(reservations));
+    renderAll();
+    checkAvailability();
+    setStatus("Свързано. Данните се пазят онлайн.", "ok");
+  }catch(err){
+    renderAll();
+    checkAvailability();
+    setStatus("Грешка при връзката: " + err.message, "bad");
+  }
+}
+
+function checkAuth(){
+  const unlocked = localStorage.getItem("calendar_unlocked_cloud_v1") === "yes";
+  document.getElementById("lockScreen").style.display = unlocked ? "none" : "flex";
+}
+function unlockApp(){
+  const input=document.getElementById("passwordInput");
+  const error=document.getElementById("lockError");
+  if(input.value === APP_PASSWORD){
+    localStorage.setItem("calendar_unlocked_cloud_v1","yes");
+    error.style.display="none";
+    checkAuth();
+    loadFromCloud();
+  }else{
+    error.style.display="block";
+    input.value="";
+    input.focus();
+  }
+}
+function lockApp(){
+  localStorage.removeItem("calendar_unlocked_cloud_v1");
+  document.getElementById("passwordInput").value="";
+  checkAuth();
+}
+document.addEventListener("DOMContentLoaded", () => {
+  checkAuth();
+  updateApiPanel();
+  const input=document.getElementById("passwordInput");
+  input.addEventListener("keydown", e => { if(e.key==="Enter") unlockApp(); });
+});
+
+function pad(n){return String(n).padStart(2,"0")}
+function key(y,m,d){return `${y}-${pad(m+1)}-${pad(d)}`}
+function dateFromKey(k){const [y,m,d]=k.split("-").map(Number); return new Date(y,m-1,d)}
+function keyFromDate(date){return `${date.getFullYear()}-${pad(date.getMonth()+1)}-${pad(date.getDate())}`}
+function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
+function mondayIndex(jsDay){return (jsDay+6)%7}
+function inRange(dayKey,start,end){const d=dateFromKey(dayKey),s=dateFromKey(start),e=dateFromKey(end); return d>=s && d<e}
+function overlaps(startA,endA,startB,endB){return dateFromKey(startA)<dateFromKey(endB) && dateFromKey(endA)>dateFromKey(startB)}
+function roomIsFree(room,start,end,excludeId=null){return !reservations.some(r => String(r.id)!==String(excludeId) && r.room===room && overlaps(r.start,r.end,start,end))}
+function findReservation(room,dayKey){return reservations.find(r => r.room===room && inRange(dayKey,r.start,r.end))}
+function escapeHtml(str){return String(str ?? "").replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[s]))}
+function fmt(k){const d=dateFromKey(k); return `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`}
+function nightsBetween(startKey,endKey){return Math.round((dateFromKey(endKey)-dateFromKey(startKey))/(1000*60*60*24))}
+
+function fillDateSelects(prefix,date){
+  const daySel=document.getElementById(prefix+"Day"), monthSel=document.getElementById(prefix+"Month"), yearSel=document.getElementById(prefix+"Year");
+  const cy=new Date().getFullYear();
+  daySel.innerHTML=Array.from({length:31},(_,i)=>`<option value="${i+1}">${i+1}</option>`).join("");
+  monthSel.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+  yearSel.innerHTML=[cy-1,cy,cy+1,cy+2,cy+3].map(y=>`<option value="${y}">${y}</option>`).join("");
+  daySel.value=date.getDate(); monthSel.value=date.getMonth(); yearSel.value=date.getFullYear();
+  [daySel,monthSel,yearSel].forEach(el => el.onchange=checkAvailability);
+}
+function selectedDateKey(prefix){
+  const d=Number(document.getElementById(prefix+"Day").value), m=Number(document.getElementById(prefix+"Month").value), y=Number(document.getElementById(prefix+"Year").value);
+  const fixedDay=Math.min(d,daysInMonth(y,m));
+  document.getElementById(prefix+"Day").value=fixedDay;
+  return key(y,m,fixedDay);
+}
+function setupControls(){
+  const month=document.getElementById("month"), year=document.getElementById("year");
+  month.innerHTML=MONTHS.map((m,i)=>`<option value="${i}">${m}</option>`).join("");
+  const cy=new Date().getFullYear();
+  year.innerHTML=[cy-1,cy,cy+1,cy+2,cy+3].map(y=>`<option value="${y}">${y}</option>`).join("");
+  month.value=current.getMonth(); year.value=current.getFullYear();
+  const today=new Date(), tomorrow=new Date(today); tomorrow.setDate(today.getDate()+1);
+  fillDateSelects("checkIn",today); fillDateSelects("checkOut",tomorrow);
+}
+function getYM(){return [Number(document.getElementById("year").value),Number(document.getElementById("month").value)]}
+function moveMonth(delta){
+  const [y,m]=getYM(); const d=new Date(y,m+delta,1);
+  document.getElementById("month").value=d.getMonth(); document.getElementById("year").value=d.getFullYear();
+  renderAll();
+}
+function roomStats(room,y,m){
+  const total=daysInMonth(y,m); let busy=0;
+  for(let d=1; d<=total; d++){ if(findReservation(room,key(y,m,d))) busy++; }
+  return {busy,free:total-busy};
+}
+function buildRoomCalendar(room,y,m){
+  const first=new Date(y,m,1), total=daysInMonth(y,m), blanks=mondayIndex(first.getDay()), today=new Date(), stats=roomStats(room,y,m);
+  let html=`<div class="room-card"><div class="room-head"><div class="room-title">🛏️ ${room}</div><div class="room-meta"><span class="pill free">${stats.free}</span><span class="pill busy">${stats.busy}</span></div></div><div class="mini-calendar"><div class="weekdays">${WEEKDAYS.map(d=>`<div class="weekday">${d}</div>`).join("")}</div><div class="days">`;
+  for(let i=0;i<blanks;i++) html+=`<div class="day empty"></div>`;
+  for(let d=1; d<=total; d++){
+    const dk=key(y,m,d), res=findReservation(room,dk), isToday=today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    html += `<button class="day ${res?'busy':'free'} ${isToday?'today':''}" onclick="openCell('${room}',${d})">${d}</button>`;
+  }
+  const tail=(7-((blanks+total)%7))%7;
+  for(let i=0;i<tail;i++) html+=`<div class="day empty"></div>`;
+  return html+`</div></div></div>`;
+}
+function renderAll(){
+  const [y,m]=getYM();
+  document.getElementById("rooms").innerHTML=ROOMS.map(room=>buildRoomCalendar(room,y,m)).join("");
+}
+function checkAvailability(){
+  const start=selectedDateKey("checkIn"), end=selectedDateKey("checkOut"), result=document.getElementById("checkResult");
+  if(dateFromKey(end)<=dateFromKey(start)){ result.innerHTML=`<span style="color:#991b1b">„До дата“ трябва да е след „От дата“.</span>`; return; }
+  const free=ROOMS.filter(room=>roomIsFree(room,start,end)), busy=ROOMS.filter(room=>!roomIsFree(room,start,end)), nights=nightsBetween(start,end);
+  result.innerHTML=`<div>Период: <b>${fmt(start)} → ${fmt(end)}</b> · ${nights} нощувки</div><div class="room-badges">${free.length?free.map(r=>`<span class="badge free">Свободна ${r}</span>`).join(""):`<span class="badge busy">Няма свободна стая</span>`}</div>${busy.length?`<div class="room-badges">${busy.map(r=>`<span class="badge busy">Заета ${r}</span>`).join("")}</div>`:""}`;
+}
+function openCell(room,day){
+  selected={room,day};
+  const [y,m]=getYM(), dk=key(y,m,day), date=new Date(y,m,day), res=findReservation(room,dk);
+  document.getElementById("dlgTitle").textContent=`Стая ${room}`;
+  document.getElementById("dlgSub").textContent=`${day} ${MONTHS[m]} ${y} · ${WEEKDAYS[mondayIndex(date.getDay())]}`;
+  document.getElementById("guest").value=""; document.getElementById("phone").value=""; document.getElementById("city").value="";
+  document.getElementById("guestCount").value="2"; document.getElementById("nights").value="1";
+  if(res){
+    const nights=nightsBetween(res.start,res.end);
+    document.getElementById("existing").innerHTML=`<div class="info-box busy"><div class="guest">Заето: ${escapeHtml(res.guest)}</div><div class="meta">${fmt(res.start)} → ${fmt(res.end)}</div>${res.phone?`<div class="meta">Телефон: ${escapeHtml(res.phone)}</div>`:""}${res.city?`<div class="meta">Град: ${escapeHtml(res.city)}</div>`:""}<div class="meta">Брой гости: ${escapeHtml(res.guestCount || "")}</div><div class="meta">Брой нощувки: ${nights}</div><div style="margin-top:10px"><button class="danger" onclick="deleteReservation('${res.id}')">Изтрий резервацията</button></div></div>`;
+    document.getElementById("form").style.display="grid"; document.getElementById("saveBtn").style.display="none";
+  }else{
+    document.getElementById("existing").innerHTML="";
+    document.getElementById("form").style.display="grid"; document.getElementById("saveBtn").style.display="block";
+  }
+  document.getElementById("dlg").showModal();
+}
+function closeDlg(){document.getElementById("dlg").close(); selected=null}
+async function saveReservation(){
+  if(!apiUrl()){ alert("Първо свържи облачната база от горната секция."); return; }
+  if(!selected) return;
+  const guest=document.getElementById("guest").value.trim();
+  const phone=document.getElementById("phone").value.trim();
+  const city=document.getElementById("city").value.trim();
+  const guestCount=Math.max(1,Number(document.getElementById("guestCount").value || 1));
+  const nights=Math.max(1,Number(document.getElementById("nights").value || 1));
+  const [y,m]=getYM(), startDate=new Date(y,m,selected.day), endDate=new Date(startDate); endDate.setDate(startDate.getDate()+nights);
+  const start=keyFromDate(startDate), end=keyFromDate(endDate);
+  if(!roomIsFree(selected.room,start,end)){ alert("Има зает ден в този период. Избери друга стая или дата."); return; }
+  const reservation={id:String(Date.now()),room:selected.room,guest,phone,city,guestCount,start,end};
+  try{
+    setStatus("Записвам в облака...", "wait");
+    const data=await api("save",{reservation});
+    reservations=data.reservations || [];
+    localStorage.setItem(CACHE_KEY,JSON.stringify(reservations));
+    closeDlg(); renderAll(); checkAvailability();
+    setStatus("Записано онлайн.", "ok");
+  }catch(err){ alert("Не се записа: " + err.message); setStatus("Грешка при запис: "+err.message,"bad"); }
+}
+async function deleteReservation(id){
+  if(!confirm("Да изтрия ли резервацията?")) return;
+  try{
+    setStatus("Изтривам от облака...", "wait");
+    const data=await api("delete",{id});
+    reservations=data.reservations || [];
+    localStorage.setItem(CACHE_KEY,JSON.stringify(reservations));
+    closeDlg(); renderAll(); checkAvailability();
+    setStatus("Изтрито онлайн.", "ok");
+  }catch(err){ alert("Не се изтри: " + err.message); setStatus("Грешка при изтриване: "+err.message,"bad"); }
+}
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./sw.js").catch(()=>{}))}
+setupControls();
+renderAll();
+checkAvailability();
+if(localStorage.getItem("calendar_unlocked_cloud_v1")==="yes") loadFromCloud();
 </script>
 </body>
 </html>
